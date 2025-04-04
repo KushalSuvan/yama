@@ -3,3 +3,4 @@ pandas
 scikit-learn
 torch
 datasets[apache-arrow]
+tokenizers
