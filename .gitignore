@@ -1,0 +1,58 @@
+# Byte-compiled / intermediate files
+__pycahe__/
+*.py[cod]
+*.so
+
+# Virtual environment
+venv/
+.env/
+
+# Data and artifacts
+data/
+artifacts/
+logs/
+*.log
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Hugging Face cache
+huggingface_cache/
+hf_cache/
+
+# Model and training outputs
+*.bin
+*.ckpt
+*.onnx
+*.h5
+*.tflite
+*.pt
+*.pth
+
+# Configuration and secrets
+config.json
+config.yaml
+*.env
+*.secret
+
+# VS Code and PyCharm settings
+.vscode/
+.idea/
+
+# Generated files
+*.pkl
+*.joblib
+.DS_Store
+
+# Python dependencies
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Ignore compiled Cython files
+*.c
+*.cpp
+*.pyx
+
+# Ignore Docker build files
+docker-compose.override.yml
+
