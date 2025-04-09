@@ -1,6 +1,6 @@
-from dataset import BilingualDataset, causal_mask
-from model import transformer_factory
-from config import get_config, get_weights_file_path
+from transformer.dataset import BilingualDataset, causal_mask
+from transformer.model import transformer_factory
+from transformer.config import get_config, get_weights_file_path
 
 import torch
 import torch.nn as nn
@@ -249,7 +249,7 @@ def train_model(config):
             'model_state_dict': model.state_dict(),
             'optimizer_state_dict': optimizer.state_dict(),
             'global_step': global_step
-        })
+        }, model_filename)
 
 
 
