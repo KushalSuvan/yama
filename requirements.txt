@@ -6,3 +6,5 @@ tensorboard
 datasets[apache-arrow]
 tokenizers
 tqdm
+notebook
+altair
