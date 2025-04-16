@@ -34,7 +34,11 @@ class BilingualDataset(Dataset):
         dec_num_padding_tokens = self.seq_len - len(dec_input_tokens) - 1
 
         if enc_num_padding_tokens < 0 or dec_num_padding_tokens < 0:
-            raise ValueError('Sentence is too long')
+            enc_input_tokens = enc_input_tokens[:self.seq_len] - 2
+            dec_input_tokens = dec_input_tokens[:self.seq_len] - 1
+            enc_num_padding_tokens = 0
+            dec_num_padding_tokens = 0
+            print("⚠️ Too long sentence encountered")
         
         encoder_input = torch.cat(
             [
