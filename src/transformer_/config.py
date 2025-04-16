@@ -9,7 +9,7 @@ def get_config():
     with open(file_path, 'r') as f:
         config = json.load(f)
 
-    print(f'-----------\nCorpus: {config['corpus']}\nTranslation: {config['lang_src']} to {config['lang_tgt']}\n-----------')
+    print(f"-----------\nCorpus: {config['corpus']}\nTranslation: {config['lang_src']} to {config['lang_tgt']}\n-----------")
     return config
 
 def get_weights_file_path(config, epoch:str):
