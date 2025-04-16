@@ -132,7 +132,7 @@ def train_model(config):
 
     # Create model_folder to save states in
     Path(config['model_folder']).mkdir(parents=True, exist_ok=True)
-    
+
     # Training loop
 
     for epoch in range(initial_epoch, config['num_epochs']):
@@ -173,6 +173,15 @@ def train_model(config):
 
             # Increment the global step (number of optimization steps)
             global_step += 1
+
+            if (global_step % 2500 == 0):
+                model_filename = get_weights_file_path(config, f'{epoch:02d}-{global_step:06d}')
+                torch.save({
+                    'epoch': epoch,
+                    'model_state_dict': model.state_dict(),
+                    'optimizer_state_dict': optimizer.state_dict(),
+                    'global_step': global_step
+                }, model_filename)
 
         # At end of each epoch, save state to disk
         
