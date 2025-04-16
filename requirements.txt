@@ -8,3 +8,4 @@ tokenizers
 tqdm
 notebook
 altair
+pytest

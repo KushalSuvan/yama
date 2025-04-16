@@ -218,7 +218,7 @@ def train_model(config):
             # Run the tensors through the transformer
             encoder_output = model.encode(encoder_input, encoder_mask)  # (B, seq_len, d_model)
             decoder_output = model.decode(encoder_output, encoder_mask, decoder_input, decoder_mask)    # (B, seq_len, d_model)
-            proj_output  = model.project(decoder_output)    # (B, seq_en, tgt_vocab_size)
+            proj_output  = model.project(decoder_output)    # (B, seq_len, tgt_vocab_size)
 
             label = batch['label'].to(device)   # (B, seq_len)
 

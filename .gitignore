@@ -30,7 +30,6 @@ hf_cache/
 *.pth
 
 # Configuration and secrets
-config.json
 config.yaml
 *.env
 *.secret
