@@ -130,6 +130,9 @@ def train_model(config):
     # Get the tensor board ready
     writer = SummaryWriter()
 
+    # Create model_folder to save states in
+    Path(config['model_folder']).mkdir(parents=True, exist_ok=True)
+    
     # Training loop
 
     for epoch in range(initial_epoch, config['num_epochs']):
@@ -172,6 +175,8 @@ def train_model(config):
             global_step += 1
 
         # At end of each epoch, save state to disk
+        
+
         model_filename = get_weights_file_path(config, f'{epoch:02d}')
         torch.save({
             "model_state_dict": model.state_dict(),
