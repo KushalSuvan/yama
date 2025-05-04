@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from transformer_ import encoder_factory
+# from transformer_ import encoder_factory
 from transformer_ import Encoder, EncoderBlock, MultiHeadAttention, InputEmbedding, ProjectionLayer, PositionalEncoding, FeedForward
         
 
@@ -24,18 +24,25 @@ class ExtractiveSummarizer(nn.Module):
         self.embed = embed
         self.pos = pos
 
+    def encode(self, x):
+        input_ids = x['input_ids']      # B, seq_len
+        masks = x['attention_mask']
+        
+        
+
     def forward(self, x):
+
         pass
 
 
-def get_extractive_summarizer(d_model: int, h: int, N: int, d_ff: int, vocab_size: int, src_seq_len: int, dropout: float=0.1):
-    encoder = encoder_factory(N, d_model, h, d_ff, dropout)
+def get_extractive_summarizer(d_model: int, h: int, N: int, d_ff: int, vocab_size: int, seq_len: int, dropout: float=0.1):
+    # encoder = encoder_factory(N, d_model, h, d_ff, dropout)
 
     src_embed = InputEmbedding(vocab_size, d_model)
     # tgt_embed = InputEmbedding(vocab_size, d_model)
     # projection = ProjectionLayer(d_model, vocab_size)
 
-    src_pos = PositionalEncoding(d_model, src_seq_len, dropout)
+    src_pos = PositionalEncoding(d_model, seq_len, dropout)
     # tgt_pos = PositionalEncoding(d_model, tgt_seq_len, dropout)
     
 

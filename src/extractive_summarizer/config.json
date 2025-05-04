@@ -4,5 +4,10 @@
     "d_model": 512,
     "h": 8,
     "N": 6,
-    "d_ff": 2048
+    "d_ff": 2048,
+    "seq_len": 500,
+
+    "tokenizer_file": "tokenizer.json",
+    "model_folder": "esum_weights",
+    "model_basename": "s_model_"
 }

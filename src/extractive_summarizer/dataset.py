@@ -1,3 +1,4 @@
+from tokenizers import Tokenizer
 from torch.utils.data import Dataset
 
 import nltk
@@ -21,9 +22,9 @@ from transformers import AutoTokenizer
 
 class ExtractiveSummarizationDataset(Dataset):
 
-    def __init__(self, ds):
+    def __init__(self, ds, tokenizer: Tokenizer):
         self.ds = ds
-        self.tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
+        self.tokenizer = tokenizer
         nltk.download('punkt_tab')
         
     def __len__(self):
@@ -51,7 +52,10 @@ class ExtractiveSummarizationDataset(Dataset):
 
 
 
-        return judgement_tokens, summary_tokens
+        return {
+            "jtokens": judgement_tokens, 
+            "stokens": summary_tokens
+        }
 
 
         
