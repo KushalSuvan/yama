@@ -6,9 +6,6 @@ from torch.utils.data import Dataset
 import nltk
 from nltk.tokenize import sent_tokenize
 
-from rouge_score import rouge_scorer
-
-from transformers import AutoTokenizer
 
 # scorer = rouge_scorer.RougeScorer(["rougeL"], use_stemmer=True)
 
