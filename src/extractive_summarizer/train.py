@@ -167,6 +167,8 @@ def train_model(config):
     # ----------------------------------------------------------------------------------------------------
     # loss_fn = nn.CrossEntropyLoss(ignore_index=tokenizer.token_to_id('[PAD]'), label_smoothing=0.1).to(device)
 
+    loss_fn = nn.BCEWithLogitsLoss().to(device)
+
 
     # Get the tensor board ready
     writer = SummaryWriter()
@@ -186,10 +188,6 @@ def train_model(config):
         # Always check whether the tensor I am working with is in GPU memory
         # If it needs to be there and is not there by something like model.to(device), push it to device
         for batch in batch_iterator:
-            # encoder_input = batch['encoder_input'].to(device)
-            # decoder_input = batch['decoder_input'].to(device)
-            # encoder_mask = batch['encoder_mask'].to(device)
-            # decoder_mask = batch['decoder_mask'].to(device)
 
             # # Run the tensors through the transformer
             # encoder_output = model.encode(encoder_input, encoder_mask)
@@ -236,9 +234,46 @@ def train_model(config):
         # }, model_filename)
 
             judgement_tokens = batch['jtokens'].to(device)
-            summary_tokens = batch['stokens'].to(device)
+            logits = model(judgement_tokens)
 
-            yield model(judgement_tokens)
+
+            target = batch['target'].to(device)
+
+            loss = loss_fn(logits, target)
+
+            batch_iterator.set_postfix({f'loss': f'{loss.item():6.3f}'})
+            # Log the loss to tensorboard
+            writer.add_scalar('train loss', loss.item(), global_step)
+            writer.flush()
+
+            loss.backward()
+
+            optimizer.step()
+            optimizer.zero_grad(set_to_none=None)
+
+            # Increment the global step (number of optimization steps)
+            global_step += 1
+
+            if (global_step % 2500 == 0):
+                model_filename = get_weights_file_path(config, f'{epoch:02d}-{global_step:06d}')
+                torch.save({
+                    'epoch': epoch,
+                    'model_state_dict': model.state_dict(),
+                    'optimizer_state_dict': optimizer.state_dict(),
+                    'global_step': global_step
+                }, model_filename)
+
+        # At end of each epoch, save state to disk
+        
+
+        model_filename = get_weights_file_path(config, f'{epoch:02d}')
+        torch.save({
+            "model_state_dict": model.state_dict(),
+            "epoch": epoch,
+            "optimizer_state_dict": optimizer.state_dict(),
+            "global_step": global_step,
+        }, model_filename)
+            
 
 
 
