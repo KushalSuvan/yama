@@ -55,6 +55,6 @@ pip-delete-this-directory.txt
 # Ignore Docker build files
 docker-compose.override.yml
 
-# Ignore tensorboard
+# Ignore tensorboard runs
 ./runs/
 
