@@ -246,6 +246,5 @@ def train_model(config):
 if __name__ == '__main__':
     warnings.filterwarnings('ignore')
     config = get_config()
-    enc_output = next(iter(train_model(config)))
-    print(enc_output)
+    train_model(config)
 
