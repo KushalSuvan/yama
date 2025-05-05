@@ -6,9 +6,9 @@
 
     "d_model": 512,
     "h": 8,
-    "N": 1,
+    "N": 3,
     "d_ff": 2048,
-    "seq_len": 300,
+    "seq_len": 200,
 
 
     "tokenizer_file": "tokenizer.json",
