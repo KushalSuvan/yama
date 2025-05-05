@@ -175,7 +175,6 @@ class MultiHeadAttention(nn.Module):
         d_k = q.size(-1)
         attention_scores = (q @ k.transpose(-1, -2)) / math.sqrt(d_k)
 
-        print(f"Attention Scores: {attention_scores.shape}")
         if mask is not None:
             attention_scores.masked_fill(mask == 0, -1e9)
 

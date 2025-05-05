@@ -1,8 +1,6 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
-# from transformer_ import encoder_factory
 from transformer_ import Encoder, EncoderBlock, MultiHeadAttention, InputEmbedding, ProjectionLayer, PositionalEncoding, FeedForward
         
 
@@ -14,22 +12,22 @@ class ExtractiveHead(nn.Module):
         self.linear1 = nn.Linear(d_model, 1)
         
     def forward(self, x):
-        return F.sigmoid(self.linear1(x))
+        return torch.sigmoid(self.linear1(x))
+    
     
 class ExtractiveSummarizer(nn.Module):
 
-    def __init__(self, encoder: Encoder, embedding: InputEmbedding, pos: PositionalEncoding):
+    def __init__(self, encoder: Encoder, embedding: InputEmbedding, pos: PositionalEncoding, score_head: ExtractiveHead):
         super().__init__()
         self.encoder = encoder
         self.embedding = embedding
         self.pos = pos
 
+        self.score_head = score_head
+
     def encode(self, x: torch.Tensor):
         input_ids = x['input_ids']      # B (1), num_of_sentences, seq_len
         masks = x['attention_mask']     # B (1), num_of_sentences, seq_len
-
-        print(f"Input IDS: {input_ids.shape}")
-        print(f"Masks: {masks.shape}")
 
         B, N, S = input_ids.shape
 
@@ -38,9 +36,6 @@ class ExtractiveSummarizer(nn.Module):
         # Note that the reason for the two extra dimensions in between lies in MHA mechanism. Mask is used directly there without any changes.
         # So this change might seem unreasonable, because the reason lies at a bit lower level
         # Alternatively we can make this change in MHA class, but I do not want to fiddle around too much...gotta submit the assignment on time
-
-        print(f"Input IDS: {input_ids.shape}")
-        print(f"Masks: {masks.shape}")
 
         embed = self.embedding(input_ids)   # B (1) * num_of_sentences, seq_len, d_model
         pos_embed = self.pos(embed)         # B (1) * num_of_sentences, seq_len, d_model
@@ -51,13 +46,14 @@ class ExtractiveSummarizer(nn.Module):
         cls_enc_output = enc_output[:, :, 0, :] # B (1), num_of_sentences, d_model
         return cls_enc_output
     
-    def extract_summaries(self):
-        pass
+    def score_sentences(self, encoder_output):
+        return self.score_head(encoder_output)  # B (1), num_of_sentences, 1
 
 
     def forward(self, x):
-
-        pass
+        encoder_output = self.encode(x)         # B, num_sentences, d_model
+        sentence_scores = self.score_sentences(encoder_output)  # B, num_sentences, 1
+        return sentence_scores.squeeze(-1)      # B, num_sentences
 
 
 def get_extractive_summarizer(d_model: int, h: int, N: int, d_ff: int, vocab_size: int, seq_len: int, dropout: float=0.1):
@@ -93,7 +89,8 @@ def get_extractive_summarizer(d_model: int, h: int, N: int, d_ff: int, vocab_siz
 
     # transformer = Transformer(encoder, decoder, src_embed, tgt_embed, src_pos, tgt_pos, projection)
 
-    esummarizer = ExtractiveSummarizer(encoder, src_embed, src_pos)
+    score_head = ExtractiveHead(d_model)
+    esummarizer = ExtractiveSummarizer(encoder, src_embed, src_pos, score_head)
 
     for p in esummarizer.parameters():
         if p.dim() > 1:

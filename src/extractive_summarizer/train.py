@@ -238,8 +238,7 @@ def train_model(config):
             judgement_tokens = batch['jtokens'].to(device)
             summary_tokens = batch['stokens'].to(device)
 
-            enc_output = model.encode(judgement_tokens)
-            yield enc_output
+            yield model(judgement_tokens)
 
 
 
