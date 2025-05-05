@@ -24,8 +24,12 @@ import json
 from extractive_summarizer.model import get_extractive_summarizer
 from extractive_summarizer.config import get_config, get_weights_file_path
 
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer, PreTrainedTokenizer
 
+import gc
+
+torch.cuda.empty_cache()
+gc.collect()
 
 def get_ds(config):
     raw_ds = None
@@ -46,18 +50,20 @@ def get_all_sentences(ds):
         text = pair['judgement']
         yield text
 
-def get_or_build_tokenizer(config, ds_raw) -> Tokenizer:
-    tokenizer_path = Path(config['tokenizer_file'])
-    if not Path.exists(tokenizer_path):
-        tokenizer = Tokenizer(WordLevel(unk_token='[UNK]'))
-        tokenizer.pre_tokenizer = Whitespace()
-        trainer = WordLevelTrainer(special_tokens=['[UNK]', '[PAD]', '[SOS]', '[EOS]'], min_frequency=2)
-        tokenizer.train_from_iterator(get_all_sentences(ds_raw), trainer=trainer)
-        tokenizer.save(str(tokenizer_path))
-    else:
-        tokenizer = Tokenizer.from_file(str(tokenizer_path))
+
+def get_or_build_tokenizer(config, ds_raw) -> PreTrainedTokenizer:
+    # tokenizer_path = Path(config['tokenizer_file'])
+    # if not Path.exists(tokenizer_path):
+    #     tokenizer = Tokenizer(WordLevel(unk_token='[UNK]'))
+    #     tokenizer.pre_tokenizer = Whitespace()
+    #     trainer = WordLevelTrainer(special_tokens=['[UNK]', '[PAD]', '[SOS]', '[EOS]'], min_frequency=2)
+    #     tokenizer.train_from_iterator(get_all_sentences(ds_raw), trainer=trainer)
+    #     tokenizer.save(str(tokenizer_path))
+    # else:
+    #     tokenizer = Tokenizer.from_file(str(tokenizer_path))
 
     tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
+    tokenizer.model_max_length = config['seq_len']
 
     return tokenizer
 
@@ -88,21 +94,23 @@ def get_ds(config):
     train_ds = ExtractiveSummarizationDataset(ds_raw, tokenizer)
     # val_ds = BilingualDataset(val_ds_raw, tokenizer_src, tokenizer_tgt, config['lang_src'], config['lang_tgt'], config['seq_len'])
 
-    max_len_src = 0
+    # max_len_src = 0
     # max_len_tgt = 0
 
-    for item in ds_raw:
-        src_ids = tokenizer.encode(item['judgement']).ids
-        # tgt_ids = tokenizer_tgt.encode(item['translation'][config['lang_tgt']]).ids
+    # for item in ds_raw:
+    #     # src_ids = tokenizer.encode(item['judgement']).ids
+    #     src_ids = tokenizer(item['judgement'])['input_ids']
+    #     # tgt_ids = tokenizer_tgt.encode(item['translation'][config['lang_tgt']]).ids
 
-        max_len_src = max(max_len_src, len(src_ids))
-        # max_len_tgt = max(max_len_tgt, len(tgt_ids))
+    #     max_len_src = max(max_len_src, len(src_ids))
+    #     # max_len_tgt = max(max_len_tgt, len(tgt_ids))
 
-    print(f'Max tokenized length of sentences: {max_len_src}')
-    # print(f'Max tokenized length of target sentences: {max_len_tgt}')
+    # print(f'Max tokenized length of sentences: {max_len_src}')
+    # # print(f'Max tokenized length of target sentences: {max_len_tgt}')
 
     train_dataloader = DataLoader(train_ds, batch_size=config['batch_size'], shuffle=True)
     # val_dataloader = DataLoader(val_ds, batch_size=1, shuffle=True)
+
 
     return train_dataloader, tokenizer
 
@@ -125,17 +133,16 @@ def train_model(config):
     else:
         print("NOTE: If you have a GPU, consider using it for training.")
 
-    device = torch.device(device)
+    device = torch.device("cpu")
 
     # Setup dataset/dataloader
 
     train_dataloader, tokenizer = get_ds(config)
 
-    yield next(iter(train_dataloader))
-
     # Setup model
 
-    model = get_model(config, tokenizer.get_vocab_size()).to(device)
+    # model = get_model(config, tokenizer.get_vocab_size()).to(device)
+    model = get_model(config, tokenizer.vocab_size).to(device)
 
     # Setup optimizer
 
@@ -157,7 +164,8 @@ def train_model(config):
 
     # Create the loss function as cross entropy loss. Ignore [PAD] tokens as they are not meaningful and we do not want to adapt to them
     # the label smoothing is "being unsure" even when correct prediction is made. This helps the training loss manifold smooth a little
-    loss_fn = nn.CrossEntropyLoss(ignore_index=tokenizer.token_to_id('[PAD]'), label_smoothing=0.1).to(device)
+    # ----------------------------------------------------------------------------------------------------
+    # loss_fn = nn.CrossEntropyLoss(ignore_index=tokenizer.token_to_id('[PAD]'), label_smoothing=0.1).to(device)
 
 
     # Get the tensor board ready
@@ -230,10 +238,14 @@ def train_model(config):
             judgement_tokens = batch['jtokens'].to(device)
             summary_tokens = batch['stokens'].to(device)
 
+            enc_output = model.encode(judgement_tokens)
+            yield enc_output
+
 
 
 if __name__ == '__main__':
     warnings.filterwarnings('ignore')
     config = get_config()
-    pair = next(iter(train_model(config)))
-    print(pair)
+    enc_output = next(iter(train_model(config)))
+    print(enc_output)
+

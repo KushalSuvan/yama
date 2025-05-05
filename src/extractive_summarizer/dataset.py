@@ -44,17 +44,23 @@ class ExtractiveSummarizationDataset(Dataset):
         judgement_sentences = sent_tokenize(judgement)
         summary_sentences = sent_tokenize(summary)
 
+        
+        summary_set = set(summary_sentences)
+        target = [1 if s.strip() in summary_set else 0 for s in judgement_sentences]
+
+
         # print(f'jsents: {judgement_sentences}')
         # print(f'ssents: {summary_sentences}')
 
-        judgement_tokens = self.tokenizer(judgement_sentences, truncation=True, padding=True, return_tensors="pt", is_split_into_words=False)
-        summary_tokens = self.tokenizer(summary_sentences, truncation=True, padding=True, return_tensors="pt", is_split_into_words=False)
-
-
+        judgement_tokens = self.tokenizer(judgement_sentences, truncation=True, padding="max_length", return_tensors="pt", is_split_into_words=False)
+        summary_tokens = self.tokenizer(summary_sentences, truncation=True, padding="max_length", return_tensors="pt", is_split_into_words=False)
 
         return {
             "jtokens": judgement_tokens, 
-            "stokens": summary_tokens
+            "stokens": summary_tokens,
+            "judgement_sentences": judgement_sentences,
+            "summary_sentences": summary_sentences,
+            "target": target
         }
 
 

@@ -18,17 +18,36 @@ class ExtractiveHead(nn.Module):
     
 class ExtractiveSummarizer(nn.Module):
 
-    def __init__(self, encoder: Encoder, embed: InputEmbedding, pos: PositionalEncoding):
+    def __init__(self, encoder: Encoder, embedding: InputEmbedding, pos: PositionalEncoding):
         super().__init__()
         self.encoder = encoder
-        self.embed = embed
+        self.embedding = embedding
         self.pos = pos
 
-    def encode(self, x):
-        input_ids = x['input_ids']      # B, seq_len
-        masks = x['attention_mask']
-        
-        
+    def encode(self, x: torch.Tensor):
+        input_ids = x['input_ids']      # B (1), num_of_sentences, seq_len
+        masks = x['attention_mask']     # B (1), num_of_sentences, seq_len
+
+        print(f"Input IDS: {input_ids.shape}")
+        print(f"Masks: {masks.shape}")
+
+        B, N, S = input_ids.shape
+
+        input_ids = input_ids.view(B*N, S).contiguous()     # B (1) * num_of_sentences, seq_len
+        masks = masks.view(B*N, S).contiguous().unsqueeze(1).unsqueeze(1)  # B (1) * num_of_sentences, 1, 1, seq_len
+        # Note that the reason for the two extra dimensions in between lies in MHA mechanism. Mask is used directly there without any changes.
+        # So this change might seem unreasonable, because the reason lies at a bit lower level
+        # Alternatively we can make this change in MHA class, but I do not want to fiddle around too much...gotta submit the assignment on time
+
+        print(f"Input IDS: {input_ids.shape}")
+        print(f"Masks: {masks.shape}")
+
+        embed = self.embedding(input_ids)   # B (1) * num_of_sentences, seq_len, d_model
+        pos_embed = self.pos(embed)         # B (1) * num_of_sentences, seq_len, d_model
+        enc_output = self.encoder(pos_embed, masks)    # B (1) * num_of_sentences, seq_len, d_model
+
+        return enc_output.view(B, N, S, -1).contiguous() # B (1), num_of_sentences, seq_len, d_model
+
 
     def forward(self, x):
 
