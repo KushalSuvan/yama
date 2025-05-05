@@ -23,7 +23,7 @@ def parse_args():
                         help="Path to training dataset JSON (default: config.json path)")
 
     # Model/training hyperparameters
-    parser.add_argument("--dual-cuda", type=bool, action="store_true",
+    parser.add_argument("--dual-cuda", action="store_true",
                         help="If there are two GPUs available on the system")
     parser.add_argument("--batch-size", type=int, default=1,
                         help="Batch size for training (default: 1)")
