@@ -77,8 +77,10 @@ def main():
         })
 
         
-        summary_idx = next(iter(train_model_esum(config)))
-        print(summary_idx)
+        # summary_idx = next(iter(train_model_esum(config)))
+        # print(summary_idx)
+
+        train_model_esum(config)
 
     else:
         print(f"Unknown mode: {args.model}", file=sys.stderr)
