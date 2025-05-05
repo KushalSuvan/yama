@@ -1,11 +1,5 @@
-numpy
-pandas
-scikit-learn
 torch
 tensorboard
-datasets[apache-arrow]
+datasets
 tokenizers
 tqdm
-notebook
-altair
-pytest
