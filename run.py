@@ -37,8 +37,8 @@ def parse_args():
                         help="Number of encoder layers (default: 3)")
     parser.add_argument("--d-ff", type=int, default=2048,
                         help="Feed-forward network dimension (default: 2048)")
-    parser.add_argument("--seq-len", type=int, default=200,
-                        help="Maximum sequence length (default: 200)")
+    parser.add_argument("--seq-len", type=int, default=150,
+                        help="Maximum sequence length (default: 150)")
 
     # Files and paths
     parser.add_argument("--tokenizer-file", type=str, default="tokenizer.json",
@@ -59,7 +59,7 @@ def main():
     if args.model == "esum":
         config = get_config_esum()
 
-        # Override config with CLI args
+        
         config.update({
             "datasource": str(Path(args.train_dataset).resolve()),
             "batch_size": args.batch_size,
@@ -76,7 +76,7 @@ def main():
             "preload": args.preload
         })
 
-        # Begin training
+        
         enc_output = next(iter(train_model_esum(config)))
         print(enc_output.shape)
 
