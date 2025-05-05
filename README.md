@@ -43,6 +43,22 @@ Run unit tests:
 pytest tests/
 ```
 
+## Hardware Notes
+
+This project has been tested on the following hardware setups:
+
+### 🖥️ RTX 3060 (6 GB VRAM)
+- ✅ **Training Configuration**:
+  - `N = 3`
+  - `seq_len = 200`
+- ⚠️ Notes:
+  - Higher batch sizes or longer sequences may lead to out-of-memory (OOM) errors.
+  - Recommended to monitor GPU usage using `nvidia-smi` during training.
+  - Mixed-precision training (e.g., with `torch.cuda.amp`) may allow slightly larger configurations.
+
+If you are using a different GPU, adjust `batch_size` and `seq_len` accordingly, based on your VRAM capacity.
+
+
 ## 📜 License
 This project is licensed under the Apache License 2.0.
 
