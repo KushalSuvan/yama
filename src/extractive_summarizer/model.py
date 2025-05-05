@@ -48,8 +48,11 @@ class ExtractiveSummarizer(nn.Module):
 
         enc_output = enc_output.view(B, N, S, -1).contiguous() # B (1), num_of_sentences, seq_len, d_model
 
-        cls_enc_output = enc_output[:, :, 0, :] # B (1), num_of_sentences, 1, d_model
+        cls_enc_output = enc_output[:, :, 0, :] # B (1), num_of_sentences, d_model
         return cls_enc_output
+    
+    def extract_summaries(self):
+        pass
 
 
     def forward(self, x):
