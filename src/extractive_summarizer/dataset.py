@@ -1,4 +1,6 @@
 from tokenizers import Tokenizer
+
+import torch
 from torch.utils.data import Dataset
 
 import nltk
@@ -47,6 +49,7 @@ class ExtractiveSummarizationDataset(Dataset):
         
         summary_set = set(summary_sentences)
         target = [1 if s.strip() in summary_set else 0 for s in judgement_sentences]
+        target = torch.tensor(target, dtype=torch.float)
 
 
         # print(f'jsents: {judgement_sentences}')
