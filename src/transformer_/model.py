@@ -230,6 +230,7 @@ class Encoder(nn.Module):
         for layer in self.layers:
             x = layer(x, mask)
 
+        x.to(next(self.norm.parameters()).device)
         return self.norm(x)
     
 

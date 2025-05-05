@@ -133,12 +133,12 @@ def train_model(config):
     else:
         print("NOTE: If you have a GPU, consider using it for training.")
 
-    device = (torch.device(device), )
+    # device = (torch.device(device), )
 
-    if config['dual_cuda'] == True:
-        device0 = torch.device('cuda:0')
-        device1 = torch.device('cuda:1')
-        device = (device0, device1)
+    # if config['dual_cuda'] == True:
+    device0 = torch.device('cuda:0')
+    device1 = torch.device('cuda:1')
+    device = (device0, device1)
 
     # Setup dataset/dataloader
 
@@ -242,8 +242,8 @@ def train_model(config):
             judgement_tokens = batch['jtokens'].to(device[0])
             logits = model(judgement_tokens)
 
-
-            target = batch['target'].to(device)
+            logits.to(device[0])
+            target = batch['target'].to(device[0])
 
             loss = loss_fn(logits, target)
 
