@@ -46,7 +46,10 @@ class ExtractiveSummarizer(nn.Module):
         pos_embed = self.pos(embed)         # B (1) * num_of_sentences, seq_len, d_model
         enc_output = self.encoder(pos_embed, masks)    # B (1) * num_of_sentences, seq_len, d_model
 
-        return enc_output.view(B, N, S, -1).contiguous() # B (1), num_of_sentences, seq_len, d_model
+        enc_output = enc_output.view(B, N, S, -1).contiguous() # B (1), num_of_sentences, seq_len, d_model
+
+        cls_enc_output = enc_output[:, :, 0, :] # B (1), num_of_sentences, 1, d_model
+        return cls_enc_output
 
 
     def forward(self, x):
