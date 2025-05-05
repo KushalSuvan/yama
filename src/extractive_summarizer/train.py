@@ -232,7 +232,8 @@ def train_model(config):
         #     "optimizer_state_dict": optimizer.state_dict(),
         #     "global_step": global_step,
         # }, model_filename)
-
+            torch.cuda.empty_cache()
+            
             judgement_tokens = batch['jtokens'].to(device)
             logits = model(judgement_tokens)
 
