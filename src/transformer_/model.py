@@ -212,7 +212,8 @@ class EncoderBlock(nn.Module):
         self.feed_forward_block = feed_forward_block
         self.residual_connections = nn.ModuleList([ResidualConnection(features, dropout) for _ in range(2)])
 
-    def forward(self, x, src_mask) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, src_mask: torch.Tensor) -> torch.Tensor:
+        x.to(next(self.parameters()).device)
         x = self.residual_connections[0](x, lambda x: self.self_attention_block(x, x, x, src_mask))
         x = self.residual_connections[1](x, self.feed_forward_block)
         return x

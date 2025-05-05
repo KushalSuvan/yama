@@ -23,6 +23,8 @@ def parse_args():
                         help="Path to training dataset JSON (default: config.json path)")
 
     # Model/training hyperparameters
+    parser.add_argument("--dual-cuda", type=bool, default=False,
+                        help="If there are two GPUs available on the system")
     parser.add_argument("--batch-size", type=int, default=1,
                         help="Batch size for training (default: 1)")
     parser.add_argument("--lr", type=float, default=1e-4,
@@ -73,7 +75,8 @@ def main():
             "tokenizer_file": args.tokenizer_file,
             "model_folder": args.model_folder,
             "model_basename": args.model_basename,
-            "preload": args.preload
+            "preload": args.preload,
+            "dual_cuda": args.dual_cuda
         })
 
         

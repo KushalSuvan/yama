@@ -63,6 +63,7 @@ class ExtractiveSummarizer(nn.Module):
         # So this change might seem unreasonable, because the reason lies at a bit lower level
         # Alternatively we can make this change in MHA class, but I do not want to fiddle around too much...gotta submit the assignment on time
 
+        input_ids.to(next(self.embedding.parameters()).device)
         embed = self.embedding(input_ids)   # B (1) * num_of_sentences, seq_len, d_model
         pos_embed = self.pos(embed)         # B (1) * num_of_sentences, seq_len, d_model
         enc_output = self.encoder(pos_embed, masks)    # B (1) * num_of_sentences, seq_len, d_model
@@ -72,7 +73,8 @@ class ExtractiveSummarizer(nn.Module):
         cls_enc_output = enc_output[:, :, 0, :] # B (1), num_of_sentences, d_model
         return cls_enc_output
     
-    def score_sentences(self, encoder_output):
+    def score_sentences(self, encoder_output: torch.Tensor):
+        encoder_output.to(next(self.score_head.parameters()).device)
         return self.score_head(encoder_output)  # B (1), num_of_sentences, 1
 
 
@@ -82,14 +84,14 @@ class ExtractiveSummarizer(nn.Module):
         return sentence_scores.squeeze(-1)      # B, num_sentences
 
 
-def get_extractive_summarizer(d_model: int, h: int, N: int, d_ff: int, vocab_size: int, seq_len: int, dropout: float=0.1):
+def get_extractive_summarizer(d_model: int, h: int, N: int, d_ff: int, vocab_size: int, seq_len: int, dropout: float=0.1, device=None):
     # encoder = encoder_factory(N, d_model, h, d_ff, dropout)
 
-    src_embed = InputEmbedding(vocab_size, d_model)
+    src_embed = InputEmbedding(vocab_size, d_model).to(device[0])
     # tgt_embed = InputEmbedding(vocab_size, d_model)
     # projection = ProjectionLayer(d_model, vocab_size)
 
-    src_pos = PositionalEncoding(d_model, seq_len, dropout)
+    src_pos = PositionalEncoding(d_model, seq_len, dropout).to(device[0])
     # tgt_pos = PositionalEncoding(d_model, tgt_seq_len, dropout)
     
 
@@ -100,7 +102,9 @@ def get_extractive_summarizer(d_model: int, h: int, N: int, d_ff: int, vocab_siz
         encoder_block = EncoderBlock(encoder_self_attention_block, feed_forward_layer, d_model, dropout)
         encoder_blocks.append(encoder_block)
 
-    encoder = Encoder(d_model, nn.ModuleList(encoder_blocks))
+    encoder = Encoder(d_model, nn.ModuleList(encoder_blocks)).to(device[0])
+    for index, layer in enumerate(encoder.layers):
+        layer.to(device[index % 2])
 
     # decoder_blocks = []
     # for _ in range(N):
@@ -115,7 +119,7 @@ def get_extractive_summarizer(d_model: int, h: int, N: int, d_ff: int, vocab_siz
 
     # transformer = Transformer(encoder, decoder, src_embed, tgt_embed, src_pos, tgt_pos, projection)
 
-    score_head = NaiveExtractiveHead(d_model)
+    score_head = NaiveExtractiveHead(d_model).to(device[1])
     esummarizer = ExtractiveSummarizer(encoder, src_embed, src_pos, score_head)
 
     for p in esummarizer.parameters():

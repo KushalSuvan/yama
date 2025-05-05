@@ -115,8 +115,8 @@ def get_ds(config):
     return train_dataloader, tokenizer
 
 
-def get_model(config, vocab_size) -> ExtractiveSummarizer:
-    model = get_extractive_summarizer(config['d_model'], config['h'], config['N'], config['d_ff'], vocab_size, config['seq_len'])
+def get_model(config, vocab_size, device) -> ExtractiveSummarizer:
+    model = get_extractive_summarizer(config['d_model'], config['h'], config['N'], config['d_ff'], vocab_size, config['seq_len'], device)
     return model
 
 
@@ -133,7 +133,12 @@ def train_model(config):
     else:
         print("NOTE: If you have a GPU, consider using it for training.")
 
-    device = torch.device(device)
+    device = (torch.device(device), )
+
+    if config['dual_cuda'] == True:
+        device0 = torch.device('cuda:0')
+        device1 = torch.device('cuda:1')
+        device = (device0, device1)
 
     # Setup dataset/dataloader
 
@@ -142,7 +147,7 @@ def train_model(config):
     # Setup model
 
     # model = get_model(config, tokenizer.get_vocab_size()).to(device)
-    model = get_model(config, tokenizer.vocab_size).to(device)
+    model = get_model(config, tokenizer.vocab_size, device)
 
     # Setup optimizer
 
@@ -167,7 +172,7 @@ def train_model(config):
     # ----------------------------------------------------------------------------------------------------
     # loss_fn = nn.CrossEntropyLoss(ignore_index=tokenizer.token_to_id('[PAD]'), label_smoothing=0.1).to(device)
 
-    loss_fn = nn.BCEWithLogitsLoss().to(device)
+    loss_fn = nn.BCEWithLogitsLoss().to(device[0])
 
 
     # Get the tensor board ready
@@ -233,8 +238,8 @@ def train_model(config):
         #     "global_step": global_step,
         # }, model_filename)
             torch.cuda.empty_cache()
-            
-            judgement_tokens = batch['jtokens'].to(device)
+
+            judgement_tokens = batch['jtokens'].to(device[0])
             logits = model(judgement_tokens)
 
 
