@@ -133,7 +133,7 @@ def train_model(config):
     else:
         print("NOTE: If you have a GPU, consider using it for training.")
 
-    device = torch.device("cpu")
+    device = torch.device(device)
 
     # Setup dataset/dataloader
 
