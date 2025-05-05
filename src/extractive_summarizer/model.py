@@ -1,18 +1,44 @@
+from abc import ABC, abstractmethod
+
 import torch
 import torch.nn as nn
 
 from transformer_ import Encoder, EncoderBlock, MultiHeadAttention, InputEmbedding, ProjectionLayer, PositionalEncoding, FeedForward
         
 
-class ExtractiveHead(nn.Module):
+class ExtractiveHead(nn.Module, ABC):
 
-    def __init__(self, d_model: int):
+    def __init__(self, d_model: int) -> None:
         super().__init__()
         self.d_model = d_model
-        self.linear1 = nn.Linear(d_model, 1)
         
-    def forward(self, x):
-        return torch.sigmoid(self.linear1(x))
+    @abstractmethod
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        pass
+    
+
+class NaiveExtractiveHead(ExtractiveHead):
+
+    def __init__(self, d_model: int) -> None:
+        super().__init__(d_model)
+        self.linear = nn.Linear(d_model, 1)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.linear(x)
+    
+
+class DeepExtractiveHead(ExtractiveHead):
+
+    def __init__(self, d_model: int) -> None:
+        super().__init__(d_model)
+        self.linear = nn.Sequential(
+            nn.Linear(d_model, d_model // 2),
+            nn.ReLU(),
+            nn.Linear(d_model // 2, 1)
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.linear(x)
     
     
 class ExtractiveSummarizer(nn.Module):
@@ -89,7 +115,7 @@ def get_extractive_summarizer(d_model: int, h: int, N: int, d_ff: int, vocab_siz
 
     # transformer = Transformer(encoder, decoder, src_embed, tgt_embed, src_pos, tgt_pos, projection)
 
-    score_head = ExtractiveHead(d_model)
+    score_head = NaiveExtractiveHead(d_model)
     esummarizer = ExtractiveSummarizer(encoder, src_embed, src_pos, score_head)
 
     for p in esummarizer.parameters():
