@@ -34,7 +34,9 @@ class DeepExtractiveHead(ExtractiveHead):
         self.linear = nn.Sequential(
             nn.Linear(d_model, d_model // 2),
             nn.ReLU(),
-            nn.Linear(d_model // 2, 1)
+            nn.Linear(d_model // 2, d_model // 8),
+            nn.ReLU(),
+            nn.Linear(d_model // 8, 1)
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -82,7 +84,7 @@ class ExtractiveSummarizer(nn.Module):
         return sentence_scores.squeeze(-1)      # B, num_sentences
 
 
-def get_extractive_summarizer(d_model: int, h: int, N: int, d_ff: int, vocab_size: int, seq_len: int, dropout: float=0.1):
+def get_extractive_summarizer(d_model: int, h: int, N: int, d_ff: int, vocab_size: int, seq_len: int, complexity: str, dropout: float=0.1):
     # encoder = encoder_factory(N, d_model, h, d_ff, dropout)
 
     src_embed = InputEmbedding(vocab_size, d_model)
@@ -115,7 +117,16 @@ def get_extractive_summarizer(d_model: int, h: int, N: int, d_ff: int, vocab_siz
 
     # transformer = Transformer(encoder, decoder, src_embed, tgt_embed, src_pos, tgt_pos, projection)
 
-    score_head = NaiveExtractiveHead(d_model)
+    score_head = None
+
+    match complexity:
+        case "naive":
+            score_head = NaiveExtractiveHead(d_model)
+        case "deep":
+            score_head = DeepExtractiveHead(d_model)
+        case "attentive":
+            raise ValueError("Attentive Head is not implemented yet")
+        
     esummarizer = ExtractiveSummarizer(encoder, src_embed, src_pos, score_head)
 
     for p in esummarizer.parameters():

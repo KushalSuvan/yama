@@ -39,6 +39,8 @@ def parse_args():
                         help="Feed-forward network dimension (default: 2048)")
     parser.add_argument("--seq-len", type=int, default=150,
                         help="Maximum sequence length (default: 150)")
+    parser.add_argument("--complexity", type=str, choices=["naive, deep, attentive"],
+                        help="choose the complexity of the extractvie head")
 
     # Files and paths
     parser.add_argument("--tokenizer-file", type=str, default="tokenizer.json",
@@ -73,7 +75,8 @@ def main():
             "tokenizer_file": args.tokenizer_file,
             "model_folder": args.model_folder,
             "model_basename": args.model_basename,
-            "preload": args.preload
+            "preload": args.preload,
+            "complexity": args.complexity
         })
 
         
