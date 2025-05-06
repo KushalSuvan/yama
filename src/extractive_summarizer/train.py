@@ -62,7 +62,7 @@ def get_or_build_tokenizer(config, ds_raw) -> PreTrainedTokenizer:
     # else:
     #     tokenizer = Tokenizer.from_file(str(tokenizer_path))
 
-    tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
+    tokenizer = AutoTokenizer.from_pretrained('distilbert-base-uncased')
     tokenizer.model_max_length = config['seq_len']
 
     return tokenizer
