@@ -232,37 +232,47 @@ def train_model(config):
         #     "optimizer_state_dict": optimizer.state_dict(),
         #     "global_step": global_step,
         # }, model_filename)
-            torch.cuda.empty_cache()
-            
-            judgement_tokens = batch['jtokens'].to(device)
-            logits = model(judgement_tokens)
+            try:
+                torch.cuda.empty_cache()
+                
+                judgement_tokens = batch['jtokens'].to(device)
+                logits = model(judgement_tokens)
 
 
-            target = batch['target'].to(device)
+                target = batch['target'].to(device)
 
-            loss = loss_fn(logits, target)
+                loss = loss_fn(logits, target)
 
-            batch_iterator.set_postfix({f'loss': f'{loss.item():6.3f}'})
-            # Log the loss to tensorboard
-            writer.add_scalar('train loss', loss.item(), global_step)
-            writer.flush()
+                batch_iterator.set_postfix({f'loss': f'{loss.item():6.3f}'})
+                # Log the loss to tensorboard
+                writer.add_scalar('train loss', loss.item(), global_step)
+                writer.flush()
 
-            loss.backward()
+                loss.backward()
 
-            optimizer.step()
-            optimizer.zero_grad(set_to_none=None)
+                optimizer.step()
+                optimizer.zero_grad(set_to_none=None)
 
-            # Increment the global step (number of optimization steps)
-            global_step += 1
+                # Increment the global step (number of optimization steps)
+                global_step += 1
 
-            if (global_step % 2500 == 0):
-                model_filename = get_weights_file_path(config, f'{epoch:02d}-{global_step:06d}')
-                torch.save({
-                    'epoch': epoch,
-                    'model_state_dict': model.state_dict(),
-                    'optimizer_state_dict': optimizer.state_dict(),
-                    'global_step': global_step
-                }, model_filename)
+                if (global_step % 2500 == 0):
+                    model_filename = get_weights_file_path(config, f'{epoch:02d}-{global_step:06d}')
+                    torch.save({
+                        'epoch': epoch,
+                        'model_state_dict': model.state_dict(),
+                        'optimizer_state_dict': optimizer.state_dict(),
+                        'global_step': global_step
+                    }, model_filename)
+            except RuntimeError as e:
+                if "out of memory" in str(e):
+                    # print("OOM error, skipping this batch.")
+                    for p in model.parameters():
+                        if p.grad is not None:
+                            del p.grad  # Free up grad memory
+                    torch.cuda.empty_cache()
+                else:
+                    raise e  # Unexpected error, re-raise
 
         # At end of each epoch, save state to disk
         
