@@ -116,7 +116,7 @@ def get_ds(config):
 
 
 def get_model(config, vocab_size) -> ExtractiveSummarizer:
-    model = get_extractive_summarizer(config['d_model'], config['h'], config['N'], config['d_ff'], vocab_size, config['seq_len'])
+    model = get_extractive_summarizer(config['d_model'], config['h'], config['N'], config['d_ff'], vocab_size, config['seq_len'], config['complexity'])
     return model
 
 
