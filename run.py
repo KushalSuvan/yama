@@ -39,7 +39,7 @@ def parse_args():
                         help="Feed-forward network dimension (default: 2048)")
     parser.add_argument("--seq-len", type=int, default=150,
                         help="Maximum sequence length (default: 150)")
-    parser.add_argument("--complexity", type=str, choices=["naive, deep, attentive"],
+    parser.add_argument("--complexity", type=str, choices=["naive", "deep", "attentive"],
                         help="choose the complexity of the extractvie head")
 
     # Files and paths
