@@ -42,6 +42,26 @@ class DeepExtractiveHead(ExtractiveHead):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.linear(x)
     
+class AttentiveExtractiveHead(ExtractiveHead):
+
+    def __init__(self, d_model: int, N: int, h: int, d_ff: int, dropout: float = 0.1) -> None:
+        super().__init__(d_model)    
+
+        encoder_blocks = []
+        for _ in range(N):
+            encoder_self_attention_block = MultiHeadAttention(d_model, h, dropout)
+            feed_forward_layer = FeedForward(d_model, d_ff, dropout)
+            encoder_block = EncoderBlock(encoder_self_attention_block, feed_forward_layer, d_model, dropout)
+            encoder_blocks.append(encoder_block)
+
+        self.encoder = Encoder(d_model, nn.ModuleList(encoder_blocks))
+        self.linear = nn.Sequential(
+            nn.Linear(d_model, 1)
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.linear(self.encoder(x))
+    
     
 class ExtractiveSummarizer(nn.Module):
 
@@ -125,7 +145,7 @@ def get_extractive_summarizer(d_model: int, h: int, N: int, d_ff: int, vocab_siz
         case "deep":
             score_head = DeepExtractiveHead(d_model)
         case "attentive":
-            raise ValueError("Attentive Head is not implemented yet")
+            score_head = AttentiveExtractiveHead(d_model, 3, 8, 2048)
         
     esummarizer = ExtractiveSummarizer(encoder, src_embed, src_pos, score_head)
 
