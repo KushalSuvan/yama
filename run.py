@@ -27,7 +27,7 @@ def parse_args():
                         help="Batch size for training (default: 1)")
     parser.add_argument("--lr", type=float, default=1e-4,
                         help="Learning rate (default: 1e-4)")
-    parser.add_argument("--num-epochs", type=int, default=8,
+    parser.add_argument("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--num-epochs", type=int, default=8,
                         help="Number of epochs (default: 8)")
     parser.add_argument("--d-model", type=int, default=512,
                         help="Transformer model dimension (default: 512)")
@@ -39,7 +39,7 @@ def parse_args():
                         help="Feed-forward network dimension (default: 2048)")
     parser.add_argument("--seq-len", type=int, default=150,
                         help="Maximum sequence length (default: 150)")
-    parser.add_argument("--complexity", type=str, choices=["naive", "deep", "attentive"],
+    parser.add_argument("--complexity", type=str, default="naive", choices=["naive", "deep", "attentive"],
                         help="choose the complexity of the extractvie head")
 
     # Files and paths
